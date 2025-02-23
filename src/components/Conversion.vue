@@ -1,29 +1,30 @@
 <template>
-    <div class="flex flex-col items-center p-4 min-h-screen bg-gray-100">
-      <h1 class="text-xl font-bold mb-4">Text Converter</h1>
-  
-      <input
-        v-model="inputText"
-        type="text"
-        placeholder="Enter text"
-        class="p-2 border rounded w-80 mb-3"
-      />
-  
-      <button
-        @click="processConversion"
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Convert
-      </button>
-  
-      <div v-if="convertedNumbers.length" class="mt-4 text-sm">
-        <p><strong>1. Converted Numbers:</strong> {{ convertedNumbers.join(" ") }}</p>
-        <p><strong>2. Final Sum:</strong> {{ finalSum }}</p>
-        <p><strong>3. Converted Letters:</strong> {{ finalLetters.join(" ") }}</p>
-      </div>
+  <div class="flex flex-col items-center p-4 min-h-screen bg-gray-100">
+    <h1 class="text-xl font-bold mb-4">Text Converter</h1>
+
+    <input
+      v-model="inputText"
+      type="text"
+      placeholder="Enter text"
+      class="p-2 border rounded w-80 mb-3"
+    />
+
+    <button
+      @click="processConversion"
+      class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      Convert
+    </button>
+
+    <div v-if="convertedNumbers.length" class="mt-4 text-sm">
+      <p><strong>1. Converted Numbers:</strong> {{ convertedNumbers.join(" ") }}</p>
+      <p><strong>2. Final Sum:</strong> {{ finalSum }}</p>
+      <p><strong>3. Converted Letters:</strong> {{ finalLetters.join(" ") }}</p>
+      <p><strong>4. Second Converted Letters:</strong> {{ number4Output.join(" ") }}</p>
     </div>
+  </div>
 </template>
-  
+
 <script setup>
 import { ref } from "vue";
 
@@ -31,6 +32,7 @@ const inputText = ref("");
 const convertedNumbers = ref([]);
 const finalSum = ref(0);
 const finalLetters = ref([]);
+const number4Output = ref([]);
 
 const charToNumMap = {
   A: 0, B: 1, C: 1, D: 1, E: 2, F: 3, G: 3, H: 3, I: 4, 
@@ -75,12 +77,29 @@ const generateSumSequence = (num) => {
 
 const convertNumberToLetters = (num) => {
   let sequence = generateSumSequence(Math.abs(num));
-  
+
   return sequence.map(d => {
     let matchingLetters = Object.keys(charToNumMap)
       .filter(char => charToNumMap[char] === d && char === char.toUpperCase());
     return matchingLetters.length > 0 ? matchingLetters[0] : "";
   });
+};
+
+const processNumber4 = (letters) => {
+  let numbers = letters.map(char => charToNumMap[char] ?? 0);
+  let sum = numbers.reduce((acc, num) => acc + num, 0);
+  let modifiedSum = sum + 2;
+  let newNumbers = [...numbers];
+  newNumbers[newNumbers.length - 2] = 1;
+  newNumbers[newNumbers.length - 1] = 2;
+
+  let finalLetters = newNumbers.map(num => {
+    let matchingLetters = Object.keys(charToNumMap)
+      .filter(char => charToNumMap[char] === num && letters.includes(char));
+    return matchingLetters.length > 0 ? matchingLetters[0] : "";
+  });
+
+  return finalLetters;
 };
 
 const processConversion = () => {
@@ -89,5 +108,6 @@ const processConversion = () => {
   convertedNumbers.value = convertTextToNumbers(inputText.value);
   finalSum.value = alternateSum(convertedNumbers.value);
   finalLetters.value = convertNumberToLetters(finalSum.value);
+  number4Output.value = processNumber4(finalLetters.value);
 };
 </script>
